@@ -17,6 +17,7 @@ class HashMap
 
   def initialize(size=16)
     @size = size
+    @load_factor = 0.85
     @buckets = Array.new(@size)
   end
 
@@ -52,16 +53,63 @@ class HashMap
     else
       puts found_key_value
     end
-    # .find(key).each {|k,v| p v}
   end
 
-  #needs work: traverse linkedlist in each bucket entry then add those entries to count
+  def has?(key)
+    keys_arr = []
+    @buckets.each {|elem| keys_arr << elem.keys if elem != nil}
+    keys_arr = keys_arr.flatten
+    return puts true if keys_arr.include?(key)
+    puts false
+  end
+
+
+  #takes a key as an argument. If the given key is in the hash map, it should remove the entry with that key
+  #and return the deleted entry’s value. If the key isn’t in the hash map, it should return nil.
+  def remove(key)
+  end
+
+  def get_keys
+    keys_arr = []
+    @buckets.each {|elem| keys_arr << elem.keys if elem != nil}
+    p keys_arr.flatten
+  end
+
+  def get_values
+    values_arr = []
+    @buckets.each {|elem| values_arr << elem.values if elem != nil}
+    p values_arr.flatten
+  end
+
+  def get_num_of_keys
+    keys_arr = []
+    @buckets.each {|elem| keys_arr << elem.keys if elem != nil}
+    puts keys_arr.flatten.length
+  end
+
+  #returns an array that includes each key value pair
+  def get_entries
+    entries_arr = []
+    @buckets.each {|elem| entries_arr << elem.entries if elem != nil}
+    p entries_arr.flatten(1)
+  end
+
   def get_size
-    count = 0
-    @buckets.each {|elem| count += 1 if elem != nil}
-    count
+    keys_arr = []
+    @buckets.each {|elem| keys_arr << elem.keys if elem != nil}
+    size = keys_arr.flatten.length
   end
 
+  def grow_buckets
+    size = get_size
+    #double buckets when size is more than 16 * load_factor (0.85)
+    #set new size of buckets to double its previous value when size is more than 16 * @load_factor.
+    #Then rearrange values in buckets according to the new
+    #bucket order of hash code mod new @size
+    if size >= @size * @load_factor
+      @size = @size * 2
+    end
+  end
 
 end
 
@@ -109,6 +157,45 @@ class LinkedList
     list_to_s
   end
 
+  def keys
+    node = self.head
+    keys_arr = []
+    while(!node.nil?)
+      k_v_pair = node.value.to_s.tr('{}""',"").split("=>")
+      if node != nil
+        keys_arr << k_v_pair[0]
+      end
+      node = node.nextNode
+    end
+    keys_arr
+  end
+
+  def values
+    node = self.head
+    values_arr = []
+    while(!node.nil?)
+      k_v_pair = node.value.to_s.tr('{}""',"").split("=>")
+      if node != nil
+        values_arr << k_v_pair[1]
+      end
+      node = node.nextNode
+    end
+    values_arr
+  end
+
+  def entries
+    node = self.head
+    entries_arr = []
+    while(!node.nil?)
+      k_v_pair = node.value.to_s.tr('{}""',"").split("=>")
+      if node != nil
+        entries_arr << [k_v_pair[0]] + [k_v_pair[1]]
+      end
+      node = node.nextNode
+    end
+    entries_arr
+  end
+
   private
   class Node
     attr_accessor :value, :nextNode
@@ -125,5 +212,11 @@ new_key = HashMap.new
 new_key.set("12", "shupppp world")
 new_key.set("352", "world")
 new_key.set("key", "shup")
+new_key.set("352", "352")
 
 new_key.get("key")
+new_key.has?("12")
+new_key.get_keys
+new_key.get_values
+new_key.get_num_of_keys
+new_key.get_entries
