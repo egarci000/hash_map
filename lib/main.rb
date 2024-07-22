@@ -57,7 +57,7 @@ class HashMap
 
   def has?(key)
     keys_arr = []
-    @buckets.each {|elem| keys_arr << elem.keys if elem != nil}
+    @buckets.each {|elem| keys_arr << elem.get_k_v_entries("keys") if elem != nil}
     keys_arr = keys_arr.flatten
     return puts true if keys_arr.include?(key)
     puts false
@@ -71,32 +71,32 @@ class HashMap
 
   def get_keys
     keys_arr = []
-    @buckets.each {|elem| keys_arr << elem.keys if elem != nil}
+    @buckets.each {|elem| keys_arr << elem.get_k_v_entries("keys") if elem != nil}
     p keys_arr.flatten
   end
 
   def get_values
     values_arr = []
-    @buckets.each {|elem| values_arr << elem.values if elem != nil}
+    @buckets.each {|elem| values_arr << elem.get_k_v_entries("values") if elem != nil}
     p values_arr.flatten
   end
 
   def get_num_of_keys
     keys_arr = []
-    @buckets.each {|elem| keys_arr << elem.keys if elem != nil}
+    @buckets.each {|elem| keys_arr << elem.get_k_v_entries("keys") if elem != nil}
     puts keys_arr.flatten.length
   end
 
   #returns an array that includes each key value pair
   def get_entries
     entries_arr = []
-    @buckets.each {|elem| entries_arr << elem.entries if elem != nil}
+    @buckets.each {|elem| entries_arr << elem.get_k_v_entries("entries") if elem != nil}
     p entries_arr.flatten(1)
   end
 
   def get_size
     keys_arr = []
-    @buckets.each {|elem| keys_arr << elem.keys if elem != nil}
+    @buckets.each {|elem| keys_arr << elem.get_k_v_entries("keys") if elem != nil}
     size = keys_arr.flatten.length
   end
 
@@ -157,43 +157,19 @@ class LinkedList
     list_to_s
   end
 
-  def keys
+  def get_k_v_entries(value)
     node = self.head
-    keys_arr = []
+    container_arr = []
     while(!node.nil?)
       k_v_pair = node.value.to_s.tr('{}""',"").split("=>")
       if node != nil
-        keys_arr << k_v_pair[0]
+        container_arr << k_v_pair[0] if value == "keys"
+        container_arr << k_v_pair[1] if value == "values"
+        container_arr << [k_v_pair[0], k_v_pair[1]] if value == "entries"
       end
       node = node.nextNode
     end
-    keys_arr
-  end
-
-  def values
-    node = self.head
-    values_arr = []
-    while(!node.nil?)
-      k_v_pair = node.value.to_s.tr('{}""',"").split("=>")
-      if node != nil
-        values_arr << k_v_pair[1]
-      end
-      node = node.nextNode
-    end
-    values_arr
-  end
-
-  def entries
-    node = self.head
-    entries_arr = []
-    while(!node.nil?)
-      k_v_pair = node.value.to_s.tr('{}""',"").split("=>")
-      if node != nil
-        entries_arr << [k_v_pair[0]] + [k_v_pair[1]]
-      end
-      node = node.nextNode
-    end
-    entries_arr
+    container_arr
   end
 
   private
