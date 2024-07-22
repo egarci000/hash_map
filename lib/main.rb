@@ -1,15 +1,7 @@
 # error to raise when trying to access out of bound index
 # raise IndexError if index.negative? || index >= @buckets.length
 
-# to do: add linkedList functionality to hashmap, linking key/value pairs to a hash code generated from the key
-
-# new_arr = Array.new(3)
-
-# new_arr[4] = {"hi"=>320}
-
-# p new_arr
-
-# return
+# need to fix collisions, get_entries returns wrong key value pairs, returning some entries as [key, key of another key/value pair]
 
 class HashMap
 
@@ -24,18 +16,18 @@ class HashMap
   def hash(key)
     hash_code = 0.77522
     prime_number = 31
-
     key.each_char {|char| hash_code = prime_number * hash_code + char.ord}
-
     hash_code_arr = hash_code.to_s.split(".")
     hash_code = hash_code_arr[0].to_i * hash_code_arr[1].to_i
     hash_code
   end
 
-  def set(key, value)
-    index = hash(key) % 16
+  def set(key, value, cleared=nil)
+    if is_over_size == true && cleared == nil
+      grow_buckets
+    end
+    index = hash(key) % @size
     k_v_pair = {key => value}
-
     if @buckets[index] == nil
       @buckets[index] = LinkedList.new
       @buckets[index].append(k_v_pair)
@@ -45,7 +37,7 @@ class HashMap
   end
 
   def get(key)
-    index = hash(key) % 16
+    index = hash(key) % @size
     begin
       found_key_value = @buckets[index].find(key)
     rescue NoMethodError
@@ -63,10 +55,16 @@ class HashMap
     puts false
   end
 
-
   #takes a key as an argument. If the given key is in the hash map, it should remove the entry with that key
   #and return the deleted entry’s value. If the key isn’t in the hash map, it should return nil.
   def remove(key)
+    index = hash(key) % @size
+    puts @buckets[index].remove(key)
+  end
+
+  def clear_hash_map
+    @buckets.compact!
+    @buckets.each {|entry| entry.clear}
   end
 
   def get_keys
@@ -88,29 +86,47 @@ class HashMap
   end
 
   #returns an array that includes each key value pair
+  ##fix, correct key, value pairs are not being returned
   def get_entries
     entries_arr = []
     @buckets.each {|elem| entries_arr << elem.get_k_v_entries("entries") if elem != nil}
     p entries_arr.flatten(1)
   end
 
-  def get_size
+  def is_over_size
     keys_arr = []
     @buckets.each {|elem| keys_arr << elem.get_k_v_entries("keys") if elem != nil}
     size = keys_arr.flatten.length
+    p @size
+    if size >= (@size * @load_factor).ceil
+      return true
+    end
+    false
   end
 
   def grow_buckets
-    size = get_size
-    #double buckets when size is more than 16 * load_factor (0.85)
-    #set new size of buckets to double its previous value when size is more than 16 * @load_factor.
-    #Then rearrange values in buckets according to the new
-    #bucket order of hash code mod new @size
-    if size >= @size * @load_factor
-      @size = @size * 2
-    end
+    @size = @size * 2
+    temp_buckets = @buckets
+    @buckets = Array.new(@size)
+    rearrange_entries(temp_buckets)
   end
 
+  def rearrange_entries(buckets)
+    temp_buckets = buckets
+    entries_arr = []
+    temp_buckets.each do |entry|
+      if entry != nil
+        k_v_pair = entry.get_k_v_entries("entries")
+        entries_arr << k_v_pair
+      end
+    end
+    entries_arr = entries_arr.flatten(2)
+    entries_arr.each_with_index do |entry, index|
+      set(entries_arr[index], entries_arr[index+1], true)
+      entries_arr.shift
+      entries_arr.shift
+    end
+  end
 end
 
 class LinkedList
@@ -136,27 +152,35 @@ class LinkedList
   def find(key)
     node = self.head
     while(!node.nil?)
-      check_pair = node.value.to_s.tr('{}""',"").split("=>")
-      return check_pair[1] if check_pair[0] == key
+      k_v_pair = node.value.to_s.tr('{}""',"").split("=>")
+      return k_v_pair[1] if k_v_pair[0] == key
       node = node.nextNode
     end
     nil
   end
 
-  def to_s
+  def remove(key_value)
     node = self.head
-    list_to_s = ""
+    count = 1
     while(!node.nil?)
-      if node.nextNode == nil
-        list_to_s += "(#{node.value}) -> nil"
-      else
-        list_to_s += "(#{node.value}) -> "
+      k_v_pair = node.value.to_s.tr('{}""',"").split("=>")
+      if key_value == k_v_pair[0] && count == 1
+        self.head = node.nextNode
+        return k_v_pair[1]
+      elsif key_value == k_v_pair[0] && count > 1
+        node.nextNode = node.nextNode.nextNode
+        return k_v_pair[1]
       end
       node = node.nextNode
+      count += 1
     end
-    list_to_s
   end
 
+  def clear
+    self.head = nil
+  end
+
+  #fix, correct key, value pairs are not being returned in get_entries method in HashMap class
   def get_k_v_entries(value)
     node = self.head
     container_arr = []
@@ -183,16 +207,36 @@ class LinkedList
   end
 end
 
-new_key = HashMap.new
+# new_map = HashMap.new
 
-new_key.set("12", "shupppp world")
-new_key.set("352", "world")
-new_key.set("key", "shup")
-new_key.set("352", "352")
+# new_map.set("12", "shupppp world")
+# new_map.set("352", "world")
+# new_map.set("key", "shup")
+# # new_map.set("352", "352")
+# new_map.set("donald", "duck")
+# new_map.set("minnie", "mouse")
+# new_map.set("mickey", "mouse")
+# new_map.set("jacques", "cortes")
+# new_map.set("louis", "xiv")
+# new_map.set("rene", "descartes")
+# new_map.set("george", "washington")
+# new_map.set("abraham", "lincoln")
+# new_map.set("john", "kennedy")
+# new_map.set("goofy", "goof")
 
-new_key.get("key")
-new_key.has?("12")
-new_key.get_keys
-new_key.get_values
-new_key.get_num_of_keys
-new_key.get_entries
+test = HashMap.new
+test.set('apple', 'red')
+test.set('banana', 'yellow')
+test.set('carrot', 'orange')
+test.set('dog', 'brown')
+test.set('elephant', 'gray')
+test.set('frog', 'green')
+test.set('grape', 'purple')
+test.set('hat', 'black')
+test.set('ice cream', 'white')
+test.set('jacket', 'blue')
+test.set('kite', 'pink')
+test.set('lion', 'golden')
+
+# new_map.clear_hash_map
+# new_map.get_entries
