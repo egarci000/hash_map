@@ -9,7 +9,7 @@ class HashMap
 
   def initialize(size=16)
     @size = size
-    @load_factor = 0.85
+    @load_factor = 0.75
     @buckets = Array.new(@size)
   end
 
@@ -55,8 +55,6 @@ class HashMap
     puts false
   end
 
-  #takes a key as an argument. If the given key is in the hash map, it should remove the entry with that key
-  #and return the deleted entry’s value. If the key isn’t in the hash map, it should return nil.
   def remove(key)
     index = hash(key) % @size
     puts @buckets[index].remove(key)
@@ -85,8 +83,6 @@ class HashMap
     puts keys_arr.flatten.length
   end
 
-  #returns an array that includes each key value pair
-  ##fix, correct key, value pairs are not being returned
   def get_entries
     entries_arr = []
     @buckets.each {|elem| entries_arr << elem.get_k_v_entries("entries") if elem != nil}
@@ -97,7 +93,6 @@ class HashMap
     keys_arr = []
     @buckets.each {|elem| keys_arr << elem.get_k_v_entries("keys") if elem != nil}
     size = keys_arr.flatten.length
-    p @size
     if size >= (@size * @load_factor).ceil
       return true
     end
@@ -107,6 +102,8 @@ class HashMap
   def grow_buckets
     @size = @size * 2
     temp_buckets = @buckets
+    temp_buckets_compact = temp_buckets.compact
+    temp_buckets_size = temp_buckets_compact.length
     @buckets = Array.new(@size)
     rearrange_entries(temp_buckets)
   end
@@ -121,12 +118,16 @@ class HashMap
       end
     end
     entries_arr = entries_arr.flatten(2)
-    entries_arr.each_with_index do |entry, index|
-      set(entries_arr[index], entries_arr[index+1], true)
-      entries_arr.shift
-      entries_arr.shift
+    times_run_loop = entries_arr.length/2
+    index=*(0..entries_arr.length)
+
+    while times_run_loop > 0
+      set(entries_arr[index[0]], entries_arr[index[1]], true)
+      index.slice!(0..1)
+      times_run_loop -= 1
     end
   end
+
 end
 
 class LinkedList
@@ -180,7 +181,6 @@ class LinkedList
     self.head = nil
   end
 
-  #fix, correct key, value pairs are not being returned in get_entries method in HashMap class
   def get_k_v_entries(value)
     node = self.head
     container_arr = []
@@ -207,23 +207,6 @@ class LinkedList
   end
 end
 
-# new_map = HashMap.new
-
-# new_map.set("12", "shupppp world")
-# new_map.set("352", "world")
-# new_map.set("key", "shup")
-# # new_map.set("352", "352")
-# new_map.set("donald", "duck")
-# new_map.set("minnie", "mouse")
-# new_map.set("mickey", "mouse")
-# new_map.set("jacques", "cortes")
-# new_map.set("louis", "xiv")
-# new_map.set("rene", "descartes")
-# new_map.set("george", "washington")
-# new_map.set("abraham", "lincoln")
-# new_map.set("john", "kennedy")
-# new_map.set("goofy", "goof")
-
 test = HashMap.new
 test.set('apple', 'red')
 test.set('banana', 'yellow')
@@ -237,6 +220,6 @@ test.set('ice cream', 'white')
 test.set('jacket', 'blue')
 test.set('kite', 'pink')
 test.set('lion', 'golden')
+test.set('moon', 'silver')
 
-# new_map.clear_hash_map
-# new_map.get_entries
+test.get_entries
