@@ -23,6 +23,10 @@ class HashMap
   end
 
   def set(key, value, cleared=nil)
+    if has?(key)
+      update_key(key, value)
+      return
+    end
     if is_over_size == true && cleared == nil
       grow_buckets
     end
@@ -34,6 +38,11 @@ class HashMap
     else
       @buckets[index].append(k_v_pair)
     end
+  end
+
+  def update_key(key, value)
+    index = hash(key) % @size
+    @buckets[index].update(key, value)
   end
 
   def get(key)
@@ -102,8 +111,6 @@ class HashMap
   def grow_buckets
     @size = @size * 2
     temp_buckets = @buckets
-    temp_buckets_compact = temp_buckets.compact
-    temp_buckets_size = temp_buckets_compact.length
     @buckets = Array.new(@size)
     rearrange_entries(temp_buckets)
   end
@@ -145,8 +152,18 @@ class LinkedList
       while(!lastNode.nextNode.nil?)
         lastNode = lastNode.nextNode
       end
-      #we're at the end of the list
       lastNode.nextNode = Node.new(value, nil)
+    end
+  end
+
+  def update(key, value)
+    node = self.head
+    while(!node.nil?)
+      k_v_pair = node.value.to_s.tr('{}""',"").split("=>")
+      if(key == k_v_pair[0])
+        node.value = {key => value}
+      end
+      node = node.nextNode
     end
   end
 
@@ -221,5 +238,6 @@ test.set('jacket', 'blue')
 test.set('kite', 'pink')
 test.set('lion', 'golden')
 test.set('moon', 'silver')
+test.set('moon', 'fluffy')
 
 test.get_entries
