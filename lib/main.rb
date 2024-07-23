@@ -51,8 +51,8 @@ class HashMap
     keys_arr = []
     @buckets.each {|elem| keys_arr << elem.get_k_v_entries("keys") if elem != nil}
     keys_arr = keys_arr.flatten
-    return puts true if keys_arr.include?(key)
-    puts false
+    return true if keys_arr.include?(key)
+    false
   end
 
   def remove(key)
