@@ -1,8 +1,3 @@
-# error to raise when trying to access out of bound index
-# raise IndexError if index.negative? || index >= @buckets.length
-
-# need to fix collisions, get_entries returns wrong key value pairs, returning some entries as [key, key of another key/value pair]
-
 class HashMap
 
   attr_accessor :buckets
